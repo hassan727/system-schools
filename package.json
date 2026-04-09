@@ -1,0 +1,26 @@
+{
+  "name": "saas-school-system",
+  "version": "0.0.1",
+  "private": true,
+  "scripts": {
+    "build": "turbo run build",
+    "dev": "turbo run dev",
+    "test": "turbo run test",
+    "lint": "turbo run lint",
+    "type-check": "turbo run type-check",
+    "clean": "turbo run clean && rm -rf node_modules",
+    "supabase": ".\\node_modules\\.pnpm\\supabase@2.87.2\\node_modules\\supabase\\bin\\supabase.exe",
+    "db:link": ".\\node_modules\\.pnpm\\supabase@2.87.2\\node_modules\\supabase\\bin\\supabase.exe link --project-ref yvxnlpgpusalfamludov",
+    "db:push": ".\\node_modules\\.pnpm\\supabase@2.87.2\\node_modules\\supabase\\bin\\supabase.exe db push",
+    "db:reset": ".\\node_modules\\.pnpm\\supabase@2.87.2\\node_modules\\supabase\\bin\\supabase.exe db reset"
+  },
+  "devDependencies": {
+    "turbo": "^2.0.0",
+    "typescript": "^5.4.0"
+  },
+  "engines": {
+    "node": ">=18.0.0",
+    "pnpm": ">=9.0.0"
+  },
+  "packageManager": "pnpm@9.0.0"
+}

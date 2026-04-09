@@ -1,0 +1,16 @@
+{
+  "name": "@saas-school/database",
+  "version": "0.0.1",
+  "private": true,
+  "description": "Supabase migrations and database utilities",
+  "scripts": {
+    "db:push": "supabase db push",
+    "db:reset": "supabase db reset",
+    "db:diff": "supabase db diff",
+    "functions:serve": "supabase functions serve --env-file .env.local",
+    "functions:deploy": "supabase functions deploy"
+  },
+  "devDependencies": {
+    "supabase": "^2.87.2"
+  }
+}

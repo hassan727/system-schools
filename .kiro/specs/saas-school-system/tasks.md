@@ -1,0 +1,518 @@
+# خطة التنفيذ: نظام SaaS لإدارة المدارس
+
+## نظرة عامة
+
+خطة تنفيذ تدريجية لبناء منصة SaaS متعددة المستأجرين لإدارة المدارس باستخدام React + Vite + TypeScript + Tailwind CSS + Zustand + Supabase + Vercel، مع دعم كامل للغتين العربية والإنجليزية (RTL/LTR).
+
+---
+
+## المهام
+
+- [ ] 0. إنشاء ملفات التوجيه (Steering Files)
+  - [ ] 0.1 إنشاء ملف `.kiro/steering/tech-stack.md`
+    - توثيق المكدس التقني: React + Vite + TypeScript + Tailwind + Zustand + Supabase + Vercel
+    - توثيق قواعد التسمية والهيكل العام للمشروع
+    - _المتطلبات: 14.1، 14.2_
+  - [ ] 0.2 إنشاء ملف `.kiro/steering/database-conventions.md`
+    - قواعد تسمية الجداول والأعمدة (snake_case)
+    - إلزامية tenant_id في كل جدول
+    - إلزامية سياسة RLS لكل جدول جديد
+    - _المتطلبات: 3.1، 3.6_
+  - [ ] 0.3 إنشاء ملف `.kiro/steering/security-rules.md`
+    - قواعد الأمان: RLS، JWT، RBAC
+    - قواعد التحقق من المدخلات
+    - _المتطلبات: 11.5، 11.6_
+  - [ ] 0.4 إنشاء ملف `.kiro/steering/i18n-rtl.md`
+    - قواعد دعم اللغتين العربية والإنجليزية
+    - قواعد RTL/LTR
+    - _المتطلبات: 14.2_
+
+
+- [x] 1. إعداد البنية التحتية للـ Monorepo
+  - [x] 1.1 تهيئة Monorepo بـ pnpm + Turborepo
+    - إنشاء `pnpm-workspace.yaml` مع تعريف `apps/*` و `packages/*`
+    - إنشاء `turbo.json` مع pipeline: build، dev، test، lint
+    - إنشاء `package.json` الجذر مع scripts مشتركة
+    - _المتطلبات: 14.1_
+  - [x] 1.2 إنشاء تطبيق `apps/web` بـ React + Vite + TypeScript
+    - تشغيل `pnpm create vite apps/web --template react-ts`
+    - إعداد `vite.config.ts` مع path aliases (`@/` → `src/`)
+    - إعداد `tsconfig.json` بإعدادات strict
+    - _المتطلبات: 14.1_
+  - [x] 1.3 إنشاء تطبيق `apps/admin` للـ Super Admin
+    - نفس إعداد apps/web مع تخصيص للوحة الإدارة
+    - _المتطلبات: 2.1، 14.1_
+  - [x] 1.4 إعداد Tailwind CSS مع دعم RTL
+    - تثبيت `tailwindcss` و `@tailwindcss/forms` و `tailwindcss-rtl`
+    - إعداد `tailwind.config.ts` مع `darkMode: 'class'` و `dir` support
+    - إضافة CSS variables للألوان الديناميكية للمستأجر
+    - _المتطلبات: 14.2، 14.6_
+  - [x] 1.5 إعداد i18next للغتين العربية والإنجليزية
+    - تثبيت `i18next` و `react-i18next` و `i18next-browser-languagedetector`
+    - إنشاء `src/i18n/index.ts` مع إعداد اللغتين
+    - إنشاء ملفات الترجمة: `ar/common.json`، `en/common.json`، وملفات كل وحدة
+    - _المتطلبات: 14.2_
+  - [x] 1.6 إعداد حزمة `packages/shared-types`
+    - إنشاء TypeScript interfaces لجميع كيانات قاعدة البيانات
+    - تصدير أنواع: `Tenant`، `User`، `Profile`، `Role`، `Permission`
+    - _المتطلبات: 4.3_
+  - [x] 1.7 إعداد TanStack Query وZustand
+    - تثبيت `@tanstack/react-query` و `zustand`
+    - إنشاء `src/app/query-client.ts` مع إعدادات retry وstale time
+    - إنشاء `src/app/providers.tsx` يجمع كل الـ providers
+    - _المتطلبات: 14.5_
+
+
+- [x] 2. إعداد Supabase CLI وقاعدة البيانات
+  - [x] 2.1 تهيئة Supabase CLI محلياً (بدون Docker)
+    - تثبيت Supabase CLI: `npm install -g supabase`
+    - تشغيل `supabase init` في جذر المشروع
+    - إعداد `supabase/config.toml` مع إعدادات المشروع
+    - إنشاء `packages/database/` مع `package.json`
+    - _المتطلبات: 3.1_
+  - [x] 2.2 إنشاء Migration للجداول الأساسية (Core Tables)
+    - إنشاء `supabase/migrations/001_extensions_and_enums.sql`
+    - إنشاء `supabase/migrations/002_core_tables.sql`: tenants، users، profiles
+    - تضمين جميع الـ indexes المعرّفة في التصميم
+    - _المتطلبات: 2.1، 2.6_
+  - [x] 2.3 إنشاء Migration لجداول RBAC
+    - إنشاء `supabase/migrations/003_rbac_tables.sql`: roles، permissions، role_permissions، user_roles
+    - _المتطلبات: 4.1، 4.3_
+  - [x] 2.4 إنشاء Migration للوحدة الأكاديمية
+    - إنشاء `supabase/migrations/004_academic_tables.sql`
+    - جداول: academic_years، students، classes، enrollments، subjects، exams، grades، timetable، events
+    - _المتطلبات: 6.1، 6.3، 9.1_
+  - [x] 2.5 إنشاء Migration لوحدة الموارد البشرية
+    - إنشاء `supabase/migrations/005_hr_tables.sql`
+    - جداول: employees، attendance، salaries، leave_requests
+    - _المتطلبات: 7.1، 7.2_
+  - [x] 2.6 إنشاء Migration للوحدة المالية
+    - إنشاء `supabase/migrations/006_finance_tables.sql`
+    - جداول: fee_structures، invoices، payments، expenses
+    - _المتطلبات: 8.1، 8.2_
+  - [x] 2.7 إنشاء Migration لجداول النظام
+    - إنشاء `supabase/migrations/007_system_tables.sql`
+    - جداول: audit_logs، notifications، custom_fields، custom_field_values، module_subscriptions، workflows، approvals
+    - _المتطلبات: 11.1، 12.1، 15.1_
+  - [x] 2.8 تفعيل RLS وإنشاء Helper Functions
+    - إنشاء `supabase/migrations/008_rls_policies.sql`
+    - إنشاء دوال: `get_tenant_id()`، `has_permission()`، `has_role()`
+    - تفعيل RLS على جميع الجداول وإنشاء جميع السياسات المعرّفة في التصميم
+    - _المتطلبات: 3.1، 3.2، 3.3، 3.4_
+  - [x] 2.9 إنشاء Database Triggers
+    - إنشاء `supabase/migrations/009_triggers.sql`
+    - Trigger: `audit_trigger_function` على الجداول الحساسة
+    - Trigger: `update_updated_at` على جميع الجداول
+    - Trigger: `check_timetable_conflict` على جدول timetable
+    - Trigger: `update_invoice_on_payment` على جدول payments
+    - Function: `calculate_student_gpa`
+    - _المتطلبات: 6.7، 8.4، 9.2، 11.1_
+  - [x] 2.10 إنشاء Seed Data
+    - إنشاء `supabase/seed.sql` مع: جميع الصلاحيات بصيغة `{module}.{resource}.{action}`، الأدوار الافتراضية للنظام
+    - _المتطلبات: 4.1، 4.3_
+
+
+- [ ] 3. نقطة تفتيش — التحقق من قاعدة البيانات
+  - تأكد من نجاح تطبيق جميع الـ migrations بدون أخطاء
+  - تأكد من تفعيل RLS على جميع الجداول
+  - تأكد من وجود seed data للصلاحيات والأدوار
+  - اسأل المستخدم إذا كانت هناك أي تساؤلات قبل المتابعة.
+
+- [x] 4. نظام المصادقة (Authentication)
+  - [x] 4.1 إنشاء Custom JWT Hook في PostgreSQL
+    - إنشاء `supabase/migrations/010_jwt_hook.sql`
+    - دالة `custom_access_token_hook` تضيف للـ JWT: `tenant_id`، `roles`، `permissions`
+    - تسجيل الـ hook في Supabase Auth settings
+    - _المتطلبات: 1.1، 4.8_
+  - [x] 4.2 إنشاء Supabase Client وإعداد Auth
+    - إنشاء `src/shared/services/supabase.ts` مع `createClient`
+    - إعداد متغيرات البيئة: `VITE_SUPABASE_URL`، `VITE_SUPABASE_ANON_KEY`
+    - إعداد `supabase/config.toml` لتفعيل Google OAuth
+    - _المتطلبات: 1.6_
+  - [x] 4.3 إنشاء Auth Store بـ Zustand
+    - إنشاء `src/shared/stores/auth.store.ts`
+    - State: `user`، `session`، `tenant`، `permissions`، `roles`، `isLoading`
+    - Actions: `login`، `logout`، `refreshSession`، `setUser`
+    - منطق قفل الحساب بعد 5 محاولات فاشلة (المتطلب 1.2)
+    - _المتطلبات: 1.1، 1.2، 1.3، 1.4_
+  - [x] 4.4 إنشاء Tenant Store بـ Zustand
+    - إنشاء `src/shared/stores/tenant.store.ts`
+    - State: `tenantId`، `tenantConfig` (شعار، ألوان، لغة، عملة)
+    - منطق استخراج subdomain من `window.location.hostname`
+    - _المتطلبات: 2.3، 2.6، 16.3_
+  - [x] 4.5 إنشاء صفحة تسجيل الدخول
+    - إنشاء `src/features/auth/pages/LoginPage.tsx`
+    - إنشاء `src/features/auth/components/LoginForm.tsx` مع React Hook Form + Zod
+    - عرض شعار وألوان المستأجر ديناميكياً
+    - دعم تسجيل الدخول بـ Google OAuth
+    - _المتطلبات: 1.1، 1.6، 16.3_
+  - [x] 4.6 إنشاء Protected Routes وAuth Guards
+    - إنشاء `src/shared/components/guards/AuthGuard.tsx`
+    - إعادة التوجيه لصفحة Login مع حفظ المسار المطلوب (`redirect` param)
+    - إنشاء `src/app/router.tsx` مع React Router v6
+    - _المتطلبات: 14.3، 14.4_
+
+
+- [x] 5. نظام RBAC (الأدوار والصلاحيات)
+  - [x] 5.1 إنشاء Permissions Utilities
+    - إنشاء `src/shared/utils/permissions.ts`
+    - دالة `hasPermission(permission: string): boolean` تقرأ من JWT
+    - دالة `hasRole(role: string): boolean`
+    - دالة `hasAnyPermission(permissions: string[]): boolean`
+    - _المتطلبات: 4.4، 4.5، 4.8_
+  - [x] 5.2 إنشاء Permission Guards
+    - إنشاء `src/shared/components/guards/PermissionGuard.tsx`
+    - Props: `permission`، `fallback`، `children`
+    - إنشاء `src/shared/components/guards/ModuleGuard.tsx`
+    - Props: `module`، `fallback`، `children` — يتحقق من `modules_enabled` في tenant
+    - _المتطلبات: 5.3، 5.5، 14.3_
+  - [x] 5.3 إنشاء usePermissions وuseModules Hooks
+    - إنشاء `src/shared/hooks/usePermissions.ts`
+    - إنشاء `src/shared/hooks/useModules.ts`
+    - _المتطلبات: 4.8، 5.4_
+
+- [x] 6. Layout والـ UI الأساسي
+  - [x] 6.1 إنشاء مكونات UI الأساسية
+    - إنشاء في `src/shared/components/ui/`: Button، Input، Modal، Badge، Avatar، Spinner، EmptyState
+    - دعم RTL في جميع المكونات
+    - _المتطلبات: 14.2_
+  - [x] 6.2 إنشاء DataTable مع فلترة وبحث
+    - إنشاء `src/shared/components/ui/DataTable.tsx`
+    - دعم: pagination، sorting، filtering، search
+    - _المتطلبات: 14.5_
+  - [x] 6.3 إنشاء AppLayout الرئيسي
+    - إنشاء `src/shared/components/layout/AppLayout.tsx`
+    - تكوين: Sidebar + Header + main content area
+    - دعم Responsive (mobile/desktop)
+    - _المتطلبات: 14.1_
+  - [x] 6.4 إنشاء Dynamic Sidebar
+    - إنشاء `src/shared/components/layout/Sidebar.tsx`
+    - بناء القائمة ديناميكياً بناءً على الوحدات المفعّلة وصلاحيات المستخدم
+    - دعم Collapsible وRTL/LTR
+    - تحديث فوري عند تغيير الصلاحيات (المتطلب 14.7)
+    - _المتطلبات: 5.4، 14.1، 14.7_
+  - [x] 6.5 إنشاء Header
+    - إنشاء `src/shared/components/layout/Header.tsx`
+    - يتضمن: Notification Bell، User Menu، Language Toggle، Theme Toggle
+    - _المتطلبات: 12.4، 14.6_
+  - [x] 6.6 إعداد Dark/Light Mode
+    - إنشاء `src/shared/stores/ui.store.ts` مع `theme`، `sidebarOpen`، `language`
+    - إنشاء `src/shared/hooks/useTheme.ts` وuseRTL.ts
+    - حفظ تفضيل المستخدم في localStorage
+    - _المتطلبات: 14.6_
+  - [x] 6.7 إنشاء Error Boundary وLoading States
+    - إنشاء `src/shared/components/ui/ErrorBoundary.tsx`
+    - إنشاء Loading skeleton components
+    - _المتطلبات: 14.5_
+
+
+- [ ] 7. نقطة تفتيش — التحقق من البنية الأساسية
+  - تأكد من عمل تسجيل الدخول وتسجيل الخروج بشكل صحيح
+  - تأكد من عمل RTL/LTR عند تغيير اللغة
+  - تأكد من عمل Dark/Light mode
+  - تأكد من أن الـ Sidebar يعرض فقط الوحدات المفعّلة
+  - اسأل المستخدم إذا كانت هناك أي تساؤلات قبل المتابعة.
+
+- [x] 8. لوحة Super Admin
+  - [x] 8.1 إنشاء صفحة إدارة المستأجرين (CRUD)
+    - إنشاء `apps/admin/src/features/tenants/pages/TenantsListPage.tsx`
+    - إنشاء `apps/admin/src/features/tenants/pages/TenantFormPage.tsx`
+    - عمليات: إنشاء مستأجر جديد، تعديل، تعليق، تفعيل
+    - التحقق من uniqueness للـ slug والـ subdomain
+    - _المتطلبات: 2.1، 2.2، 2.7_
+  - [x] 8.2 إنشاء صفحة إدارة الوحدات لكل مستأجر
+    - إنشاء `apps/admin/src/features/tenants/components/ModuleToggle.tsx`
+    - تفعيل/تعطيل الوحدات: Academic، HR، Finance، Scheduling، Reports
+    - تطبيق التغيير فورياً
+    - _المتطلبات: 5.1، 5.2، 5.6_
+  - [x] 8.3 إنشاء صفحة سجلات التدقيق
+    - إنشاء `apps/admin/src/features/audit/pages/AuditLogsPage.tsx`
+    - فلترة حسب: المستأجر، المستخدم، نوع العملية، الفترة الزمنية
+    - _المتطلبات: 11.7_
+  - [x] 8.4 إنشاء لوحة إحصائيات النظام
+    - إنشاء `apps/admin/src/features/system/pages/SystemDashboard.tsx`
+    - عرض: إجمالي المستأجرين، المستخدمين، الطلاب، حالة النظام
+    - _المتطلبات: 10.1_
+
+- [x] 9. الوحدة الأكاديمية — إدارة الطلاب والفصول
+  - [x] 9.1 إنشاء خدمة الطلاب (Student Service)
+    - إنشاء `src/features/academic/students/services/student.service.ts`
+    - عمليات: CRUD، بحث، تصفية، توليد رقم الطالب بصيغة `{prefix}-{year}-{seq}`
+    - _المتطلبات: 6.1، 6.2_
+  - [x] 9.2 إنشاء صفحات إدارة الطلاب
+    - إنشاء `StudentsListPage.tsx` مع DataTable وبحث وتصفية
+    - إنشاء `StudentFormPage.tsx` مع نموذج كامل (اسم ثنائي عربي/إنجليزي، تاريخ ميلاد، جنس، بيانات ولي الأمر، صورة)
+    - إنشاء `StudentDetailPage.tsx` مع عرض الدرجات والحضور
+    - _المتطلبات: 6.1، 6.2_
+  - [x] 9.3 إنشاء إدارة السنوات الأكاديمية والفصول
+    - إنشاء `src/features/academic/classes/` مع CRUD للفصول
+    - التحقق من الطاقة الاستيعابية عند التسجيل (المتطلب 6.4)
+    - _المتطلبات: 6.3، 6.4_
+  - [x] 9.4 إنشاء إدارة المواد الدراسية
+    - إنشاء `src/features/academic/subjects/` مع CRUD للمواد
+    - ربط المادة بفصل وسنة أكاديمية ومعلم
+    - _المتطلبات: 6.5_
+  - [ ]* 9.5 كتابة اختبارات وحدة لخدمة الطلاب
+    - اختبار توليد رقم الطالب الفريد
+    - اختبار رفض التسجيل عند تجاوز الطاقة الاستيعابية
+    - _المتطلبات: 6.2، 6.4_
+
+
+- [ ] 10. الوحدة الأكاديمية — الامتحانات والدرجات وGPA
+  - [ ] 10.1 إنشاء إدارة الامتحانات والدرجات
+    - إنشاء `src/features/academic/exams/` مع CRUD للامتحانات
+    - إنشاء `src/features/academic/grades/` مع نموذج إدخال الدرجات
+    - التحقق من أن الدرجة ضمن النطاق المحدد (0 → max_score) قبل الحفظ
+    - _المتطلبات: 6.6_
+  - [ ] 10.2 إنشاء دالة حساب GPA في الفرونت اند
+    - إنشاء `src/features/academic/grades/utils/gpa.calculator.ts`
+    - تطبيق نفس منطق `calculate_student_gpa` من قاعدة البيانات
+    - _المتطلبات: 6.7_
+  - [ ]* 10.3 اختبار خاصية: GPA في النطاق الصحيح [0.0, 4.0]
+    - **الخاصية P12: GPA في النطاق الصحيح [0.0, 4.0]**
+    - **تتحقق من: المتطلب 6.7**
+    - استخدام fast-check لتوليد مصفوفات عشوائية من الدرجات والتحقق من أن GPA دائماً بين 0.0 و4.0
+  - [ ]* 10.4 اختبار خاصية: الدرجات الكاملة تعطي GPA = 4.0
+    - **الخاصية P13: الدرجات الكاملة تعطي GPA = 4.0**
+    - **تتحقق من: المتطلب 6.7**
+  - [ ]* 10.5 اختبار خاصية: الدرجات الراسبة تعطي GPA = 0.0
+    - **الخاصية P14: الدرجات الراسبة تعطي GPA = 0.0**
+    - **تتحقق من: المتطلب 6.7**
+  - [ ]* 10.6 اختبار خاصية: GPA يزيد مع تحسن الدرجات
+    - **الخاصية P15: GPA يزيد مع تحسن الدرجات (monotonicity)**
+    - **تتحقق من: المتطلب 6.7**
+  - [ ] 10.7 إنشاء تصدير كشوف الدرجات بصيغة PDF
+    - تثبيت `@react-pdf/renderer` أو `jspdf`
+    - إنشاء `src/features/academic/grades/utils/grade-report.pdf.tsx`
+    - تضمين شعار المدرسة وبياناتها
+    - _المتطلبات: 6.8_
+
+- [ ] 11. الوحدة الأكاديمية — الجدول الدراسي والأحداث
+  - [ ] 11.1 إنشاء إدارة الجدول الدراسي
+    - إنشاء `src/features/scheduling/timetable/` مع واجهة إنشاء الجدول
+    - عرض الجدول الأسبوعي بشكل مرئي (grid view)
+    - _المتطلبات: 9.1_
+  - [ ] 11.2 إنشاء منطق فحص التعارض في الفرونت اند
+    - إنشاء `src/features/scheduling/timetable/utils/conflict-checker.ts`
+    - فحص تعارض المعلم والقاعة قبل الإرسال للـ API
+    - عرض تفاصيل التعارض للمستخدم
+    - _المتطلبات: 9.2، 9.3_
+  - [ ]* 11.3 اختبار خاصية: عدم تعارض حصص المعلم
+    - **الخاصية P16: عدم تعارض حصص المعلم في نفس الوقت**
+    - **تتحقق من: المتطلبات 9.2، 9.3**
+    - استخدام fast-check لتوليد جداول عشوائية والتحقق من غياب التعارض
+  - [ ] 11.4 إنشاء إدارة الأحداث المدرسية
+    - إنشاء `src/features/scheduling/events/` مع CRUD للأحداث
+    - إرسال إشعارات للمعنيين عند إنشاء حدث
+    - _المتطلبات: 9.4_
+  - [ ] 11.5 إنشاء تصدير الجدول بصيغة PDF وiCal
+    - إنشاء `src/features/scheduling/timetable/utils/timetable-export.ts`
+    - _المتطلبات: 9.5_
+
+
+- [ ] 12. وحدة الموارد البشرية (HR)
+  - [ ] 12.1 إنشاء إدارة الموظفين
+    - إنشاء `src/features/hr/employees/` مع CRUD كامل
+    - نموذج: الاسم، المسمى الوظيفي، القسم، تاريخ التعيين، الراتب الأساسي، بيانات التواصل
+    - توليد رقم الموظف الفريد
+    - _المتطلبات: 7.1_
+  - [ ] 12.2 إنشاء تسجيل الحضور اليومي
+    - إنشاء `src/features/hr/attendance/` مع واجهة تسجيل الحضور
+    - حساب ساعات العمل الفعلية تلقائياً
+    - تصنيف الغياب (مبرر/غير مبرر) وتحديث رصيد الإجازات
+    - _المتطلبات: 7.2، 7.3_
+  - [ ] 12.3 إنشاء إدارة الرواتب
+    - إنشاء `src/features/hr/salaries/` مع واجهة توليد كشف الراتب
+    - حساب: الراتب الأساسي + البدلات - الخصومات بناءً على أيام الحضور
+    - إنشاء سجل غير قابل للتعديل عند الإقرار
+    - _المتطلبات: 7.4، 7.5_
+  - [ ]* 12.4 اختبار خاصية: صحة حساب صافي الراتب
+    - **الخاصية P11: صافي الراتب = الأساسي + البدلات - الخصومات، ولا يكون سالباً**
+    - **تتحقق من: المتطلب 7.4**
+    - استخدام fast-check لتوليد قيم عشوائية للراتب والبدلات والخصومات
+  - [ ] 12.5 إنشاء إدارة الإجازات
+    - إنشاء `src/features/hr/leaves/` مع نموذج طلب الإجازة
+    - سير عمل الموافقة والرفض
+    - _المتطلبات: 7.6_
+
+- [ ] 13. الوحدة المالية (Finance)
+  - [ ] 13.1 إنشاء إدارة هياكل الرسوم
+    - إنشاء `src/features/finance/fee-structures/` مع CRUD
+    - أنواع: سنوية، فصلية، شهرية، مرة واحدة
+    - دعم الخصومات والإعفاءات
+    - _المتطلبات: 8.1_
+  - [ ] 13.2 إنشاء إدارة الفواتير
+    - إنشاء `src/features/finance/invoices/` مع CRUD
+    - إنشاء فاتورة تلقائياً عند تسجيل الطالب في فصل
+    - _المتطلبات: 8.2_
+  - [ ] 13.3 إنشاء تسجيل المدفوعات
+    - إنشاء `src/features/finance/payments/` مع نموذج تسجيل الدفع
+    - تحديث رصيد الفاتورة فورياً بعد الدفع
+    - إرسال إيصال إلكتروني
+    - _المتطلبات: 8.3، 8.4_
+  - [ ]* 13.4 اختبار خاصية: صحة حساب رصيد الفاتورة
+    - **الخاصية P8: رصيد الفاتورة = الإجمالي - الخصم - المدفوع، ولا يكون سالباً**
+    - **تتحقق من: المتطلب 8.4**
+  - [ ]* 13.5 اختبار خاصية: المدفوعات لا تتجاوز قيمة الفاتورة
+    - **الخاصية P9: مجموع المدفوعات ≤ (الإجمالي - الخصم)**
+    - **تتحقق من: المتطلبات 8.3، 8.4**
+  - [ ]* 13.6 اختبار خاصية: اتساق حالة الفاتورة مع المدفوعات
+    - **الخاصية P10: حالة الفاتورة تتوافق مع نسبة السداد (pending/partial/paid)**
+    - **تتحقق من: المتطلب 8.4**
+  - [ ] 13.7 إنشاء إدارة المصروفات
+    - إنشاء `src/features/finance/expenses/` مع CRUD
+    - دعم رفع المرفقات
+    - _المتطلبات: 8.6_
+  - [ ] 13.8 إنشاء التقارير المالية
+    - إنشاء `src/features/finance/reports/` مع تقارير: الإيرادات، المصروفات، المستحقات
+    - _المتطلبات: 8.7_
+
+
+- [ ] 14. نقطة تفتيش — التحقق من الوحدات الأساسية
+  - تأكد من عمل الوحدة الأكاديمية (طلاب، فصول، درجات، GPA)
+  - تأكد من عمل وحدة HR (موظفون، حضور، رواتب)
+  - تأكد من عمل الوحدة المالية (فواتير، مدفوعات)
+  - تأكد من عمل فحص التعارض في الجدول الدراسي
+  - اسأل المستخدم إذا كانت هناك أي تساؤلات قبل المتابعة.
+
+- [ ] 15. نظام الإشعارات
+  - [ ] 15.1 إنشاء Supabase Edge Function للإشعارات
+    - إنشاء `supabase/functions/send-notification/index.ts`
+    - دعم قناتين: In-App وEmail
+    - إرسال الإشعار خلال 30 ثانية من وقوع الحدث
+    - _المتطلبات: 12.1، 12.2_
+  - [ ] 15.2 إنشاء Notification Store وHook
+    - إنشاء `src/shared/stores/notification.store.ts`
+    - إنشاء `src/shared/hooks/useNotifications.ts`
+    - الاشتراك في Supabase Realtime لاستقبال الإشعارات الفورية
+    - _المتطلبات: 12.4_
+  - [ ] 15.3 إنشاء NotificationBell Component
+    - إنشاء `src/shared/components/notifications/NotificationBell.tsx`
+    - عرض عدد الإشعارات غير المقروءة
+    - إنشاء `NotificationList.tsx` مع قائمة الإشعارات
+    - _المتطلبات: 12.4، 12.5_
+  - [ ] 15.4 إنشاء Edge Function لإشعارات البريد الإلكتروني
+    - إنشاء `supabase/functions/send-email/index.ts` باستخدام Resend أو SendGrid
+    - قوالب إشعارات باللغتين العربية والإنجليزية
+    - _المتطلبات: 12.1، 12.3_
+  - [ ] 15.5 ربط الإشعارات بالأحداث التلقائية
+    - تذكير الرسوم المتأخرة (cron job أو trigger)
+    - إشعار نتائج الامتحانات عند إدخال الدرجات
+    - إشعار الغياب
+    - _المتطلبات: 12.5_
+
+- [ ] 16. وحدة التقارير والتحليلات
+  - [ ] 16.1 إنشاء لوحة التحكم الرئيسية (Dashboard)
+    - إنشاء `src/features/dashboard/pages/DashboardPage.tsx`
+    - إنشاء مكونات: StatsCard، RevenueChart، AttendanceWidget
+    - عرض: إجمالي الطلاب، نسبة الحضور، الإيرادات الشهرية، المستحقات المتأخرة
+    - _المتطلبات: 10.1_
+  - [ ] 16.2 إنشاء تقارير الحضور
+    - إنشاء `src/features/reports/attendance/` مع تقارير يومية/أسبوعية/شهرية
+    - _المتطلبات: 10.2_
+  - [ ] 16.3 إنشاء تقارير الأداء الأكاديمي
+    - إنشاء `src/features/reports/academic/` مع توزيع الدرجات والمعدلات
+    - _المتطلبات: 10.3_
+  - [ ] 16.4 إنشاء رسوم بيانية تفاعلية
+    - تثبيت `recharts` أو `chart.js`
+    - رسوم بيانية للبيانات الرئيسية
+    - _المتطلبات: 10.6_
+  - [ ] 16.5 إنشاء تصدير التقارير بصيغة PDF وExcel
+    - إنشاء `src/shared/utils/export.ts` مع دوال: `exportToPDF`، `exportToExcel`
+    - _المتطلبات: 10.5_
+
+
+- [ ] 17. نظام تخزين الملفات
+  - [ ] 17.1 إنشاء Storage Service
+    - إنشاء `src/shared/services/storage.service.ts`
+    - تنظيم الملفات: `{tenant_id}/{resource_type}/{resource_id}/{filename}`
+    - التحقق من MIME type الفعلي (ليس فقط الامتداد)
+    - _المتطلبات: 13.1، 13.4، 13.5_
+  - [ ] 17.2 إنشاء FileUpload Component
+    - إنشاء `src/shared/components/ui/FileUpload.tsx`
+    - دعم: صور (max 5MB)، مستندات PDF/Word/Excel (max 20MB)
+    - توليد Signed URLs للوصول الآمن
+    - _المتطلبات: 13.2، 13.3، 13.6_
+
+- [ ] 18. الحقول المخصصة ومحرك سير العمل
+  - [ ] 18.1 إنشاء إدارة الحقول المخصصة
+    - إنشاء `src/features/settings/custom-fields/` مع CRUD
+    - أنواع الحقول: نص، رقم، تاريخ، قائمة منسدلة، نعم/لا
+    - عرض الحقول المخصصة تلقائياً في نماذج الطلاب والموظفين والفصول
+    - _المتطلبات: 15.1، 15.2، 15.3، 15.4_
+  - [ ] 18.2 إنشاء محرك سير العمل (Workflow Engine)
+    - إنشاء `src/features/settings/workflows/` مع واجهة تعريف القواعد
+    - التحقق من صحة القواعد قبل التفعيل
+    - _المتطلبات: 15.5، 15.6_
+
+- [ ] 19. اختبارات الأمان وعزل البيانات (Property-Based Tests)
+  - [ ]* 19.1 اختبار خاصية: مستخدم من tenant_A لا يرى بيانات tenant_B
+    - **الخاصية P1: عزل البيانات بين المستأجرين**
+    - **تتحقق من: المتطلبات 3.1، 3.3، 3.5**
+    - إنشاء `packages/shared-types/src/tests/tenant-isolation.property.ts`
+    - استخدام fast-check لتوليد tenant IDs عشوائية والتحقق من عزل البيانات
+  - [ ]* 19.2 اختبار خاصية: لا يمكن الوصول لسجل بـ ID من مستأجر آخر
+    - **الخاصية P2: عزل الوصول المباشر بالـ ID**
+    - **تتحقق من: المتطلبات 3.3، 3.4**
+  - [ ]* 19.3 اختبار خاصية: إنشاء سجل يضيف tenant_id تلقائياً
+    - **الخاصية P3: إضافة tenant_id التلقائية عبر RLS**
+    - **تتحقق من: المتطلب 3.2**
+  - [ ]* 19.4 اختبار خاصية: جميع الصلاحيات تتبع الصيغة الصحيحة
+    - **الخاصية P4: صيغة الصلاحيات `{module}.{resource}.{action}`**
+    - **تتحقق من: المتطلب 4.3**
+  - [ ]* 19.5 اختبار خاصية: رفض الوصول عند غياب الصلاحية
+    - **الخاصية P5: رفض الوصول غير المصرح به**
+    - **تتحقق من: المتطلبات 4.4، 4.5**
+  - [ ]* 19.6 اختبار خاصية: Super Admin يملك كل الصلاحيات
+    - **الخاصية P6: Super Admin يملك جميع الصلاحيات**
+    - **تتحقق من: المتطلب 4.1**
+  - [ ]* 19.7 اختبار خاصية: عزل الأدوار بين المستأجرين
+    - **الخاصية P7: الأدوار المخصصة لا تظهر لمستأجرين آخرين**
+    - **تتحقق من: المتطلب 4.2**
+
+
+- [ ] 20. نقطة تفتيش — التحقق من الاختبارات
+  - تأكد من نجاح جميع اختبارات Property-Based Testing
+  - تأكد من نجاح اختبارات عزل البيانات بين المستأجرين
+  - تأكد من نجاح اختبارات RBAC
+  - اسأل المستخدم إذا كانت هناك أي تساؤلات قبل المتابعة.
+
+- [ ] 21. النشر والإنتاج
+  - [ ] 21.1 إعداد Vercel Configuration
+    - إنشاء `vercel.json` مع إعداد Subdomain routing وRewrites
+    - إعداد متغيرات البيئة في Vercel Dashboard
+    - إعداد `middleware.ts` لاستخراج subdomain وتحديد المستأجر
+    - _المتطلبات: 16.1، 16.2، 16.3_
+  - [ ] 21.2 إعداد Supabase Production
+    - إعداد مشروع Supabase للإنتاج
+    - تطبيق جميع الـ migrations على بيئة الإنتاج
+    - إعداد Custom JWT Hook في Supabase Dashboard
+    - _المتطلبات: 1.1، 3.1_
+  - [ ] 21.3 إعداد Security Headers
+    - إضافة headers في `vercel.json`: CSP، HSTS، X-Frame-Options
+    - إلزامية HTTPS على جميع الاتصالات
+    - _المتطلبات: 11.8_
+  - [ ] 21.4 إعداد Rate Limiting
+    - إعداد Rate Limiting في Supabase أو Vercel Edge: 100 طلب/دقيقة لكل مستخدم
+    - _المتطلبات: 11.3، 11.4_
+  - [ ]* 21.5 تحسين الأداء
+    - إعداد Code Splitting وLazy Loading للوحدات
+    - إعداد TanStack Query caching strategies
+    - _المتطلبات: 10.4_
+
+- [ ] 22. نقطة تفتيش نهائية
+  - تأكد من نجاح جميع الاختبارات
+  - تأكد من عمل النشر على Vercel
+  - تأكد من عمل Subdomain routing بشكل صحيح
+  - تأكد من عمل جميع الوحدات في بيئة الإنتاج
+  - اسأل المستخدم إذا كانت هناك أي تساؤلات قبل الإغلاق.
+
+---
+
+## ملاحظات
+
+- المهام المعلّمة بـ `*` اختيارية ويمكن تخطيها للحصول على MVP أسرع
+- كل مهمة تشير إلى متطلبات محددة لضمان التتبع الكامل
+- نقاط التفتيش تضمن التحقق التدريجي من الجودة
+- اختبارات Property-Based Testing تتحقق من الخصائص الشاملة للنظام (P1-P16)
+- يجب تنفيذ المهام بالترتيب المحدد لأن كل مرحلة تعتمد على السابقة

@@ -1,0 +1,69 @@
+{
+  "app": {
+    "name": "لوحة تحكم المشرف العام",
+    "loading": "جاري التحميل..."
+  },
+  "nav": {
+    "dashboard": "لوحة التحكم",
+    "tenants": "المستأجرون",
+    "users": "المستخدمون",
+    "modules": "الوحدات",
+    "auditLogs": "سجلات التدقيق",
+    "settings": "الإعدادات",
+    "logout": "تسجيل الخروج"
+  },
+  "actions": {
+    "save": "حفظ",
+    "cancel": "إلغاء",
+    "delete": "حذف",
+    "edit": "تعديل",
+    "view": "عرض",
+    "add": "إضافة",
+    "search": "بحث",
+    "filter": "تصفية",
+    "confirm": "تأكيد",
+    "back": "رجوع",
+    "close": "إغلاق",
+    "submit": "إرسال",
+    "activate": "تفعيل",
+    "suspend": "تعليق"
+  },
+  "status": {
+    "active": "نشط",
+    "inactive": "غير نشط",
+    "suspended": "معلق",
+    "trial": "تجريبي",
+    "expired": "منتهي"
+  },
+  "tenants": {
+    "title": "إدارة المستأجرين",
+    "add": "إضافة مستأجر",
+    "name": "اسم المدرسة",
+    "subdomain": "النطاق الفرعي",
+    "status": "الحالة",
+    "modules": "الوحدات المفعّلة",
+    "students": "الطلاب",
+    "employees": "الموظفون"
+  },
+  "errors": {
+    "general": "حدث خطأ غير متوقع",
+    "forbidden": "غير مصرح لك بالوصول",
+    "serverError": "خطأ في الخادم"
+  },
+  "auth": {
+    "login": "تسجيل الدخول",
+    "logout": "تسجيل الخروج",
+    "email": "البريد الإلكتروني",
+    "password": "كلمة المرور"
+  },
+  "language": {
+    "ar": "العربية",
+    "en": "English",
+    "toggle": "تغيير اللغة"
+  },
+  "theme": {
+    "light": "فاتح",
+    "dark": "داكن",
+    "toggle": "تغيير المظهر"
+  }
+}
